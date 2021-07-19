@@ -11,9 +11,9 @@ namespace Service.PriceHistory.Services
 {
     public class BasePriceService : IBasePriceSerivce
     {
-        private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _dataWriter;
+        private readonly IMyNoSqlServerDataWriter<InstrumentPriceRecordNoSqlEntity> _dataWriter;
 
-        public BasePriceService(IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> dataWriter)
+        public BasePriceService(IMyNoSqlServerDataWriter<InstrumentPriceRecordNoSqlEntity> dataWriter)
         {
             _dataWriter = dataWriter;
         }
@@ -25,14 +25,14 @@ namespace Service.PriceHistory.Services
             {
                 BasePrices = entities.Select(rec => new BasePriceResponse()
                 {
-                    InstrumentId = rec.AssetPriceRecord.InstrumentSymbol,
-                    BrokerId = rec.AssetPriceRecord.BrokerId,
-                    CurrentPrice = rec.AssetPriceRecord.CurrentPrice,
-                    H24A = rec.AssetPriceRecord.H24.Price,
-                    H24P = Calculate24HPercent(rec.AssetPriceRecord),
-                    D7 = rec.AssetPriceRecord.D7.Price,
-                    M1 = rec.AssetPriceRecord.M1.Price,
-                    M3 = rec.AssetPriceRecord.M3.Price,
+                    InstrumentId = rec.InstrumentPriceRecord.InstrumentSymbol,
+                    BrokerId = rec.InstrumentPriceRecord.BrokerId,
+                    CurrentPrice = rec.InstrumentPriceRecord.CurrentPrice,
+                    H24A = rec.InstrumentPriceRecord.H24.Price,
+                    H24P = Calculate24HPercent(rec.InstrumentPriceRecord),
+                    D7 = rec.InstrumentPriceRecord.D7.Price,
+                    M1 = rec.InstrumentPriceRecord.M1.Price,
+                    M3 = rec.InstrumentPriceRecord.M3.Price,
                 }).ToList()
             };
         }
@@ -42,20 +42,20 @@ namespace Service.PriceHistory.Services
             var entity = await _dataWriter.GetAsync(request.BrokerId, request.InstrumentId);
             return new BasePriceResponse()
             {
-                InstrumentId = entity.AssetPriceRecord.InstrumentSymbol,
-                BrokerId = entity.AssetPriceRecord.BrokerId,
-                CurrentPrice = entity.AssetPriceRecord.CurrentPrice,
-                H24A = entity.AssetPriceRecord.H24.Price,
-                H24P = Calculate24HPercent(entity.AssetPriceRecord),
-                D7 = entity.AssetPriceRecord.D7.Price,
-                M1 = entity.AssetPriceRecord.M1.Price,
-                M3 = entity.AssetPriceRecord.M3.Price,
+                InstrumentId = entity.InstrumentPriceRecord.InstrumentSymbol,
+                BrokerId = entity.InstrumentPriceRecord.BrokerId,
+                CurrentPrice = entity.InstrumentPriceRecord.CurrentPrice,
+                H24A = entity.InstrumentPriceRecord.H24.Price,
+                H24P = Calculate24HPercent(entity.InstrumentPriceRecord),
+                D7 = entity.InstrumentPriceRecord.D7.Price,
+                M1 = entity.InstrumentPriceRecord.M1.Price,
+                M3 = entity.InstrumentPriceRecord.M3.Price,
             };
         }
 
         public async Task<BasePriceResponse> EditBasePriceRecord(BasePriceEditRequest request)
         {
-            var record = new AssetPriceRecord()
+            var record = new InstrumentPriceRecord()
             {
                 InstrumentSymbol = request.InstrumentId,
                 BrokerId = request.BrokerId,
@@ -81,23 +81,23 @@ namespace Service.PriceHistory.Services
                     RecordTime = DateTime.UtcNow
                 },
             };
-            await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(record));
+            await _dataWriter.InsertOrReplaceAsync(InstrumentPriceRecordNoSqlEntity.Create(record));
             
             var entity = await _dataWriter.GetAsync(request.BrokerId, request.InstrumentId);
             return new BasePriceResponse()
             {
-                InstrumentId = entity.AssetPriceRecord.InstrumentSymbol,
-                BrokerId = entity.AssetPriceRecord.BrokerId,
-                CurrentPrice = entity.AssetPriceRecord.CurrentPrice,
-                H24A = entity.AssetPriceRecord.H24.Price,
-                H24P = Calculate24HPercent(entity.AssetPriceRecord),
-                D7 = entity.AssetPriceRecord.D7.Price,
-                M1 = entity.AssetPriceRecord.M1.Price,
-                M3 = entity.AssetPriceRecord.M3.Price,
+                InstrumentId = entity.InstrumentPriceRecord.InstrumentSymbol,
+                BrokerId = entity.InstrumentPriceRecord.BrokerId,
+                CurrentPrice = entity.InstrumentPriceRecord.CurrentPrice,
+                H24A = entity.InstrumentPriceRecord.H24.Price,
+                H24P = Calculate24HPercent(entity.InstrumentPriceRecord),
+                D7 = entity.InstrumentPriceRecord.D7.Price,
+                M1 = entity.InstrumentPriceRecord.M1.Price,
+                M3 = entity.InstrumentPriceRecord.M3.Price,
             };
         }
 
-        private double Calculate24HPercent(AssetPriceRecord priceRecord)
+        private double Calculate24HPercent(InstrumentPriceRecord priceRecord)
         {
             return ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
         }

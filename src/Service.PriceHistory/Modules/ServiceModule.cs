@@ -16,8 +16,8 @@ namespace Service.PriceHistory.Modules
         protected override void Load(ContainerBuilder builder)
         {
 
-            builder.RegisterMyNoSqlWriter<AssetPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
-                AssetPriceRecordNoSqlEntity.TableName);
+            builder.RegisterMyNoSqlWriter<InstrumentPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
+                InstrumentPriceRecordNoSqlEntity.TableName);
             
             
             var factory = new MyGrpcClientFactory(Program.Settings.CandlesServiceGrpcUrl);

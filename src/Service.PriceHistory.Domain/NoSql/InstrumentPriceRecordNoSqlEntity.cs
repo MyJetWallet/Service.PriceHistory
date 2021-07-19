@@ -3,7 +3,7 @@ using Service.PriceHistory.Domain.Models;
 
 namespace Service.PriceHistory.Domain.NoSql
 {
-    public class AssetPriceRecordNoSqlEntity: MyNoSqlDbEntity
+    public class InstrumentPriceRecordNoSqlEntity: MyNoSqlDbEntity
     {
         
             public const string TableName = "base-price-history";
@@ -11,16 +11,16 @@ namespace Service.PriceHistory.Domain.NoSql
             public static string GeneratePartitionKey(string brokerId) => brokerId;
             public static string GenerateRowKey(string instrumentSymbol) => instrumentSymbol;
 
-            public AssetPriceRecord AssetPriceRecord;
+            public InstrumentPriceRecord InstrumentPriceRecord;
 
 
-            public static AssetPriceRecordNoSqlEntity Create(AssetPriceRecord priceRecord)
+            public static InstrumentPriceRecordNoSqlEntity Create(InstrumentPriceRecord priceRecord)
             {
                 return new()
                 {
                     PartitionKey = GeneratePartitionKey(priceRecord.BrokerId),
                     RowKey = GenerateRowKey(priceRecord.InstrumentSymbol),
-                    AssetPriceRecord = priceRecord
+                    InstrumentPriceRecord = priceRecord
                 };
             }
         

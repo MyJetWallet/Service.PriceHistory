@@ -21,12 +21,12 @@ namespace Service.PriceHistory.Jobs
         private readonly ISimpleTradingCandlesHistoryGrpc _candlesHistory;
         private readonly ISpotInstrumentsDictionaryService _instrumentsDictionaryService;
         private readonly ILogger<PriceUpdatingJob> _logger;
-        private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _dataWriter;
+        private readonly IMyNoSqlServerDataWriter<InstrumentPriceRecordNoSqlEntity> _dataWriter;
         private readonly MyTaskTimer _timer;
-        private Dictionary<string, AssetPriceRecord> _prices = new ();
+        private Dictionary<string, InstrumentPriceRecord> _prices = new ();
         private List<SpotInstrument> _instruments = new ();
 
-        public PriceUpdatingJob(ISimpleTradingCandlesHistoryGrpc candlesHistory, ILogger<PriceUpdatingJob> logger, ISpotInstrumentsDictionaryService instrumentsDictionaryService, IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> dataWriter)
+        public PriceUpdatingJob(ISimpleTradingCandlesHistoryGrpc candlesHistory, ILogger<PriceUpdatingJob> logger, ISpotInstrumentsDictionaryService instrumentsDictionaryService, IMyNoSqlServerDataWriter<InstrumentPriceRecordNoSqlEntity> dataWriter)
         {
             _candlesHistory = candlesHistory;
             _logger = logger;
@@ -86,7 +86,7 @@ namespace Service.PriceHistory.Jobs
                         };                        
                         
                         await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
+                            InstrumentPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
                     }
                 }
             }
@@ -118,7 +118,7 @@ namespace Service.PriceHistory.Jobs
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
+                            InstrumentPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
                     }
                 }
                 
@@ -143,7 +143,7 @@ namespace Service.PriceHistory.Jobs
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
+                            InstrumentPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
                     }
                 }
                 
@@ -168,7 +168,7 @@ namespace Service.PriceHistory.Jobs
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
+                            InstrumentPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
                     }
                 }
             }
@@ -196,13 +196,13 @@ namespace Service.PriceHistory.Jobs
         public async void Start()
         {
             var prices = await _dataWriter.GetAsync();
-            _prices = prices.Select(t => t.AssetPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
+            _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
             _instruments = (await _instrumentsDictionaryService.GetAllSpotInstrumentsAsync()).SpotInstruments.ToList();
             foreach (var instrument in _instruments)
             {
                 if (!_prices.TryGetValue(instrument.Symbol, out _))
                 {
-                    var record = new AssetPriceRecord()
+                    var record = new InstrumentPriceRecord()
                     {
                         InstrumentSymbol = instrument.Symbol,
                         BrokerId = instrument.BrokerId,
@@ -227,7 +227,7 @@ namespace Service.PriceHistory.Jobs
                             RecordTime = DateTime.MinValue
                         }
                     };
-                    await _dataWriter.InsertAsync(AssetPriceRecordNoSqlEntity.Create(record));
+                    await _dataWriter.InsertAsync(InstrumentPriceRecordNoSqlEntity.Create(record));
                     _prices.Add(instrument.Symbol, record);
                 }
             }
