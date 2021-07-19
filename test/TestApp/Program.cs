@@ -19,7 +19,7 @@ namespace TestApp
             var factory = new PriceHistoryClientFactory("http://localhost:5001");
             var client = factory.GetBasePriceService();
 
-            var resp = await  client.GetPricesByAsset(new BasePriceRequest(){BrokerId = "jetwallet", AssetId = "BTC"});
+            var resp = await  client.GetPricesByAsset(new BasePriceRequest(){BrokerId = "jetwallet", InstrumentId = "BTC"});
             Console.WriteLine(resp?.CurrentPrice);
 
             Console.WriteLine("End");

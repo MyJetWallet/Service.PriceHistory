@@ -9,7 +9,7 @@ namespace Service.PriceHistory.Domain.NoSql
             public const string TableName = "base-price-history";
 
             public static string GeneratePartitionKey(string brokerId) => brokerId;
-            public static string GenerateRowKey(string assetSymbol) => assetSymbol;
+            public static string GenerateRowKey(string instrumentSymbol) => instrumentSymbol;
 
             public AssetPriceRecord AssetPriceRecord;
 
@@ -19,7 +19,7 @@ namespace Service.PriceHistory.Domain.NoSql
                 return new()
                 {
                     PartitionKey = GeneratePartitionKey(priceRecord.BrokerId),
-                    RowKey = GenerateRowKey(priceRecord.AssetSymbol),
+                    RowKey = GenerateRowKey(priceRecord.InstrumentSymbol),
                     AssetPriceRecord = priceRecord
                 };
             }

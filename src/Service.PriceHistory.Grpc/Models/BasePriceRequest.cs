@@ -6,6 +6,6 @@ namespace Service.PriceHistory.Grpc.Models
     public class BasePriceRequest
     {
         [DataMember(Order = 1)]public string BrokerId { get; set; }
-        [DataMember(Order = 2)]public string AssetId { get; set; }
+        [DataMember(Order = 2)]public string InstrumentId { get; set; }
     }
 }

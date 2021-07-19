@@ -5,7 +5,7 @@ namespace Service.PriceHistory.Domain.Models
     public class AssetPriceRecord
     {
         public string BrokerId { get; set; }
-        public string AssetSymbol { get; set; }
+        public string InstrumentSymbol { get; set; }
         public double CurrentPrice { get; set; }
         public BasePrice H24 { get; set; }
         public BasePrice D7 { get; set; }

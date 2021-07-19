@@ -25,7 +25,7 @@ namespace Service.PriceHistory.Services
             {
                 BasePrices = entities.Select(rec => new BasePriceResponse()
                 {
-                    AssetId = rec.AssetPriceRecord.AssetSymbol,
+                    InstrumentId = rec.AssetPriceRecord.InstrumentSymbol,
                     BrokerId = rec.AssetPriceRecord.BrokerId,
                     CurrentPrice = rec.AssetPriceRecord.CurrentPrice,
                     H24A = rec.AssetPriceRecord.H24.Price,
@@ -39,10 +39,10 @@ namespace Service.PriceHistory.Services
 
         public async Task<BasePriceResponse> GetPricesByAsset(BasePriceRequest request)
         {
-            var entity = await _dataWriter.GetAsync(request.BrokerId, request.AssetId);
+            var entity = await _dataWriter.GetAsync(request.BrokerId, request.InstrumentId);
             return new BasePriceResponse()
             {
-                AssetId = entity.AssetPriceRecord.AssetSymbol,
+                InstrumentId = entity.AssetPriceRecord.InstrumentSymbol,
                 BrokerId = entity.AssetPriceRecord.BrokerId,
                 CurrentPrice = entity.AssetPriceRecord.CurrentPrice,
                 H24A = entity.AssetPriceRecord.H24.Price,
@@ -57,7 +57,7 @@ namespace Service.PriceHistory.Services
         {
             var record = new AssetPriceRecord()
             {
-                AssetSymbol = request.AssetId,
+                InstrumentSymbol = request.InstrumentId,
                 BrokerId = request.BrokerId,
                 CurrentPrice = request.CurrentPrice,
                 H24 = new BasePrice()
@@ -83,10 +83,10 @@ namespace Service.PriceHistory.Services
             };
             await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(record));
             
-            var entity = await _dataWriter.GetAsync(request.BrokerId, request.AssetId);
+            var entity = await _dataWriter.GetAsync(request.BrokerId, request.InstrumentId);
             return new BasePriceResponse()
             {
-                AssetId = entity.AssetPriceRecord.AssetSymbol,
+                InstrumentId = entity.AssetPriceRecord.InstrumentSymbol,
                 BrokerId = entity.AssetPriceRecord.BrokerId,
                 CurrentPrice = entity.AssetPriceRecord.CurrentPrice,
                 H24A = entity.AssetPriceRecord.H24.Price,
