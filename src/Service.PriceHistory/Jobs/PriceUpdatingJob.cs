@@ -196,7 +196,8 @@ namespace Service.PriceHistory.Jobs
         public async void Start()
         {
             var prices = await _dataWriter.GetAsync();
-            _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
+            if(prices.Any())
+                _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
             _instruments = (await _instrumentsDictionaryService.GetAllSpotInstrumentsAsync()).SpotInstruments.ToList();
             foreach (var instrument in _instruments)
             {
