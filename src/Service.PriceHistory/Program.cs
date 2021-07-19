@@ -62,7 +62,7 @@ namespace Service.PriceHistory
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     var httpPort = Environment.GetEnvironmentVariable("HTTP_PORT") ?? "8080";
-                    var grpcPort = Environment.GetEnvironmentVariable("GRPC_PORT") ?? "81";
+                    var grpcPort = Environment.GetEnvironmentVariable("GRPC_PORT") ?? "80";
 
                     Console.WriteLine($"HTTP PORT: {httpPort}");
                     Console.WriteLine($"GRPC PORT: {grpcPort}");

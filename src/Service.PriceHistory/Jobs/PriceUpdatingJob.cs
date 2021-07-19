@@ -62,11 +62,12 @@ namespace Service.PriceHistory.Jobs
 
         private async Task UpdateHourlyPrices()
         {
-            _logger.LogInformation("Updating hour prices");
+            
             foreach (var asset in _assets)
             {
                 if (_prices[asset.Symbol].H24.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
+                    _logger.LogInformation("Updating 24H prices for {Asset}", asset.Symbol);
                     var candles = await _candlesHistory.GetCandlesHistoryAsync(
                         new GetCandlesHistoryGrpcRequestContract()
                         {
@@ -94,11 +95,11 @@ namespace Service.PriceHistory.Jobs
         
         private async Task UpdateDailyPrices()
         {
-            _logger.LogInformation("Updating daily prices");
             foreach (var asset in _assets)
             {
                 if (_prices[asset.Symbol].D7.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
                 {
+                    _logger.LogInformation("Updating D7 prices for {Asset}", asset.Symbol);
                     var candles = await _candlesHistory.GetCandlesHistoryAsync(
                         new GetCandlesHistoryGrpcRequestContract()
                         {
@@ -123,6 +124,7 @@ namespace Service.PriceHistory.Jobs
                 
                 if (_prices[asset.Symbol].M1.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
                 {
+                    _logger.LogInformation("Updating M1 prices for {Asset}", asset.Symbol);
                     var candles = await _candlesHistory.GetCandlesHistoryAsync(
                         new GetCandlesHistoryGrpcRequestContract()
                         {
@@ -147,6 +149,7 @@ namespace Service.PriceHistory.Jobs
                 
                 if (_prices[asset.Symbol].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
                 {
+                    _logger.LogInformation("Updating M3 prices for {Asset}", asset.Symbol);
                     var candles = await _candlesHistory.GetCandlesHistoryAsync(
                         new GetCandlesHistoryGrpcRequestContract()
                         {
