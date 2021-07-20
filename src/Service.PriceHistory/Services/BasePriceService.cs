@@ -29,7 +29,7 @@ namespace Service.PriceHistory.Services
                     BrokerId = rec.InstrumentPriceRecord.BrokerId,
                     CurrentPrice = rec.InstrumentPriceRecord.CurrentPrice,
                     H24A = rec.InstrumentPriceRecord.H24.Price,
-                    H24P = Calculate24HPercent(rec.InstrumentPriceRecord),
+                    H24P = rec.InstrumentPriceRecord.H24P,
                     D7 = rec.InstrumentPriceRecord.D7.Price,
                     M1 = rec.InstrumentPriceRecord.M1.Price,
                     M3 = rec.InstrumentPriceRecord.M3.Price,
@@ -46,7 +46,7 @@ namespace Service.PriceHistory.Services
                 BrokerId = entity.InstrumentPriceRecord.BrokerId,
                 CurrentPrice = entity.InstrumentPriceRecord.CurrentPrice,
                 H24A = entity.InstrumentPriceRecord.H24.Price,
-                H24P = Calculate24HPercent(entity.InstrumentPriceRecord),
+                H24P = entity.InstrumentPriceRecord.H24P,
                 D7 = entity.InstrumentPriceRecord.D7.Price,
                 M1 = entity.InstrumentPriceRecord.M1.Price,
                 M3 = entity.InstrumentPriceRecord.M3.Price,
@@ -90,16 +90,11 @@ namespace Service.PriceHistory.Services
                 BrokerId = entity.InstrumentPriceRecord.BrokerId,
                 CurrentPrice = entity.InstrumentPriceRecord.CurrentPrice,
                 H24A = entity.InstrumentPriceRecord.H24.Price,
-                H24P = Calculate24HPercent(entity.InstrumentPriceRecord),
+                H24P = entity.InstrumentPriceRecord.H24P,
                 D7 = entity.InstrumentPriceRecord.D7.Price,
                 M1 = entity.InstrumentPriceRecord.M1.Price,
                 M3 = entity.InstrumentPriceRecord.M3.Price,
             };
-        }
-
-        private double Calculate24HPercent(InstrumentPriceRecord priceRecord)
-        {
-            return ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
         }
     }
 }

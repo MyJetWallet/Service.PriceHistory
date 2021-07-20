@@ -54,9 +54,12 @@ namespace Service.PriceHistory.Jobs
                     CandleType = CandleTypeGrpcModel.Minute,
                     Amount = 10
                 });
-                
-                if(TryGetCandlePrice(candles.ToList(), out var price))
+
+                if (TryGetCandlePrice(candles.ToList(), out var price))
+                {
                     _prices[instrument.Symbol].CurrentPrice = price;
+                    _prices[instrument.Symbol].H24P = Calculate24HPercent(_prices[instrument.Symbol]);
+                }
             }
         }
 
@@ -83,7 +86,9 @@ namespace Service.PriceHistory.Jobs
                         {
                             Price = price,
                             RecordTime = DateTime.UtcNow
-                        };                        
+                        };
+
+                        _prices[instrument.Symbol].H24P = Calculate24HPercent(_prices[instrument.Symbol]);
                         
                         await _dataWriter.InsertOrReplaceAsync(
                             InstrumentPriceRecordNoSqlEntity.Create(_prices[instrument.Symbol]));
@@ -193,11 +198,17 @@ namespace Service.PriceHistory.Jobs
             return true;
         }
         
+        private double Calculate24HPercent(InstrumentPriceRecord priceRecord)
+        {
+            return ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
+        }
+        
         public async void Start()
         {
             var prices = await _dataWriter.GetAsync();
             if(prices.Any())
                 _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
+            
             _instruments = (await _instrumentsDictionaryService.GetAllSpotInstrumentsAsync()).SpotInstruments.ToList();
             foreach (var instrument in _instruments)
             {
