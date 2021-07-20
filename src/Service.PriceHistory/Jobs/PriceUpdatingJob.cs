@@ -200,6 +200,8 @@ namespace Service.PriceHistory.Jobs
         
         private double Calculate24HPercent(InstrumentPriceRecord priceRecord)
         {
+            if (priceRecord.CurrentPrice == 0 || priceRecord.H24.Price == 0)
+                return 0;
             return ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
         }
         
