@@ -57,7 +57,7 @@ namespace Service.PriceHistory.Jobs
 
                 if (TryGetCandlePrice(candles.ToList(), out var price))
                 {
-                    _prices[instrument.Symbol].CurrentPrice = price;
+                    _prices[instrument.Symbol].CurrentPrice = Math.Round(price, instrument.Accuracy, MidpointRounding.ToPositiveInfinity);
                     _prices[instrument.Symbol].H24P = Calculate24HPercent(_prices[instrument.Symbol]);
                 }
             }
@@ -84,7 +84,7 @@ namespace Service.PriceHistory.Jobs
                     if (TryGetCandlePrice(candles.ToList(), out var price)){
                         _prices[instrument.Symbol].H24 = new BasePrice
                         {
-                            Price = price,
+                            Price = Math.Round(price, instrument.Accuracy, MidpointRounding.ToPositiveInfinity),
                             RecordTime = DateTime.UtcNow
                         };
 
@@ -119,7 +119,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument.Symbol].D7 = new BasePrice
                         {
-                            Price = price,
+                            Price = Math.Round(price, instrument.Accuracy, MidpointRounding.ToPositiveInfinity),
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -144,7 +144,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument.Symbol].M1 = new BasePrice
                         {
-                            Price = price,
+                            Price = Math.Round(price, instrument.Accuracy, MidpointRounding.ToPositiveInfinity),
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -169,7 +169,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument.Symbol].M3 = new BasePrice
                         {
-                            Price = price,
+                            Price = Math.Round(price, instrument.Accuracy, MidpointRounding.ToPositiveInfinity),
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -179,7 +179,7 @@ namespace Service.PriceHistory.Jobs
             }
         }
 
-        private bool TryGetCandlePrice(List<CandleGrpcModel> candles, out double price)
+        private bool TryGetCandlePrice(List<CandleGrpcModel> candles, out decimal price)
         {
             price = 0;
             candles = candles.OrderByDescending(t => t.DateTime).ToList();
@@ -189,20 +189,21 @@ namespace Service.PriceHistory.Jobs
             {
                 foreach (var candle in candles.Where(candle => candle.Close != 0))
                 {
-                    price = candle.Close;
+                    price = (decimal)candle.Close;
                     return true;
                 }
             }
 
-            price = candles.First().Open;
+            price = (decimal)candles.First().Open;
             return true;
         }
         
-        private double Calculate24HPercent(InstrumentPriceRecord priceRecord)
+        private decimal Calculate24HPercent(InstrumentPriceRecord priceRecord)
         {
             if (priceRecord.CurrentPrice == 0 || priceRecord.H24.Price == 0)
                 return 0;
-            return ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
+            var percentage = ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
+            return Math.Round(percentage, 2, MidpointRounding.ToPositiveInfinity);
         }
         
         public async void Start()
@@ -220,6 +221,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         InstrumentSymbol = instrument.Symbol,
                         BrokerId = instrument.BrokerId,
+                        H24P = 0,
                         H24 = new BasePrice()
                         {
                             Price = 0,

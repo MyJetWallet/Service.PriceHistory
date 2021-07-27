@@ -7,10 +7,10 @@ namespace Service.PriceHistory.Grpc.Models
     {
         [DataMember(Order = 1)]public string BrokerId { get; set; }
         [DataMember(Order = 2)]public string InstrumentId { get; set; }
-        [DataMember(Order = 3)] public double CurrentPrice { get; set; }
-        [DataMember(Order = 4)] public double H24 { get; set; }
-        [DataMember(Order = 5)] public double D7 { get; set; }
-        [DataMember(Order = 6)] public double M1 { get; set; }
-        [DataMember(Order = 7)] public double M3 { get; set; }
+        [DataMember(Order = 3)] public decimal CurrentPrice { get; set; }
+        [DataMember(Order = 4)] public decimal H24 { get; set; }
+        [DataMember(Order = 5)] public decimal D7 { get; set; }
+        [DataMember(Order = 6)] public decimal M1 { get; set; }
+        [DataMember(Order = 7)] public decimal M3 { get; set; }
     }
 }
