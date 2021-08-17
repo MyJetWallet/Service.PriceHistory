@@ -3,6 +3,7 @@ using Autofac.Core;
 using Autofac.Core.Registration;
 using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.NoSql;
+using Service.AssetsDictionary.Client;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
 using Service.PriceHistory.Domain.NoSql;
@@ -26,23 +27,15 @@ namespace Service.PriceHistory.Modules
                 .RegisterInstance(factory.CreateGrpcService<ISimpleTradingCandlesHistoryGrpc>())
                 .As<ISimpleTradingCandlesHistoryGrpc>()
                 .SingleInstance();
-           
-            var assetDictionaryFactory = new AssetsDictionaryClientFactory(Program.Settings.AssetDictionaryGrpcServiceUrl);
 
-            builder
-                .RegisterInstance(assetDictionaryFactory.GetAssetsDictionaryService())
-                .As<IAssetsDictionaryService>()
-                .SingleInstance();
-            
-            builder
-                .RegisterInstance(assetDictionaryFactory.GetSpotInstrumentsDictionaryService())
-                .As<ISpotInstrumentsDictionaryService>()
-                .SingleInstance();
+            var noSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
+            builder.RegisterAssetsDictionaryClients(noSqlClient);
                 
             builder.RegisterType<PriceUpdatingJob>()
                 .AsSelf()
                 .AutoActivate()
                 .SingleInstance();
+            
         }
     }
 }

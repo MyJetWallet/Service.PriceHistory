@@ -16,9 +16,9 @@ namespace Service.PriceHistory.Settings
         
         [YamlProperty("PriceHistory.CandlesServiceGrpcUrl")]
         public string CandlesServiceGrpcUrl { get; set; }
-                
-        [YamlProperty("PriceHistory.AssetDictionaryGrpcServiceUrl")]
-        public string AssetDictionaryGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("PriceHistory.MyNoSqlReaderHostPort")]
+        public string MyNoSqlReaderHostPort { get; set; }
         
         [YamlProperty("PriceHistory.MyNoSqlWriterUrl")]
         public string MyNoSqlWriterUrl { get; set; }
