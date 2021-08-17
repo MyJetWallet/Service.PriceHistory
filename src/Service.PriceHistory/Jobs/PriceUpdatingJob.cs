@@ -127,7 +127,7 @@ namespace Service.PriceHistory.Jobs
                     }
                 }
                 
-                //if (_prices[instrument.Symbol].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
+                if (_prices[instrument.Symbol].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
                 {
                     _logger.LogInformation("Updating M3 prices for {Instrument}", instrument.Symbol);
                     if (TryGetCandlePrice(instrument.Symbol, DateTime.UtcNow.AddMonths(-3), out var price))
@@ -193,7 +193,7 @@ namespace Service.PriceHistory.Jobs
 
         private bool TryGetCandlePrice(string instrument, DateTime timePoint, out decimal price)
         {
-            var candles = _candles[instrument];
+            var candles = _candles[instrument].Where(t=>t.Open != 0 && t.Close != 0);
             var candle = candles.LastOrDefault(t => t.DateTime >= timePoint);
             if (candle != null)
             {
