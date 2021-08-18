@@ -22,11 +22,11 @@ namespace Service.PriceHistory
 
         protected override void OnStarted()
         {
-            _priceUpdatingJob.Start();
             foreach(var client in _myNoSqlTcpClientManagers)
             {
                 client.Start();
             }
+            _priceUpdatingJob.Start();
             _logger.LogInformation("OnStarted has been called.");
         }
 
