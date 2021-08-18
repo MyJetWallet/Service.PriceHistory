@@ -36,6 +36,7 @@ namespace Service.PriceHistory.Jobs
             _dataWriter = dataWriter;
             _instrumentDictionaryClient = instrumentDictionaryClient;
             _timer = new MyTaskTimer(typeof(PriceUpdatingJob), TimeSpan.FromSeconds(Program.Settings.TimerPeriodInSec), _logger, DoTime);
+            _instrumentDictionaryClient.OnChanged += OnInstrumentChange;
         }
 
         private async Task DoTime()
@@ -91,7 +92,6 @@ namespace Service.PriceHistory.Jobs
                 }
             }
         }
-    
         
         private async Task UpdateDailyPrices()
         {
@@ -219,17 +219,27 @@ namespace Service.PriceHistory.Jobs
             var percentage = ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
             return Math.Round(percentage, 2, MidpointRounding.ToPositiveInfinity);
         }
-        
-        public async void Start()
+
+        private void OnInstrumentChange()
         {
-            var prices = await _dataWriter.GetAsync();
-            if(prices.Any())
-                _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
+            UpdateInstruments();
+            InitPrices().GetAwaiter().GetResult();
+        }
+        
+        private void UpdateInstruments()
+        {
             while (!_instruments.Any())
             {
                 _instruments = _instrumentDictionaryClient.GetAllSpotInstruments().ToList();
                 Thread.Sleep(1000);
             }
+        }
+        private async Task InitPrices()
+        {
+            var prices = await _dataWriter.GetAsync();
+            if(prices.Any())
+                _prices = prices.Select(t => t.InstrumentPriceRecord).ToDictionary(key => key.InstrumentSymbol, value => value);
+
             foreach (var instrument in _instruments)
             {
                 if (!_prices.TryGetValue(instrument.Symbol, out _))
@@ -264,7 +274,12 @@ namespace Service.PriceHistory.Jobs
                     _prices.Add(instrument.Symbol, record);
                 }
             }
-
+        }
+        
+        public async void Start()
+        {
+            UpdateInstruments();
+            await InitPrices();
             _timer.Start();
         }
 
