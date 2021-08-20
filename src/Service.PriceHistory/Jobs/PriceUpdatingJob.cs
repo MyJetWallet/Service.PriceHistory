@@ -43,23 +43,40 @@ namespace Service.PriceHistory.Jobs
 
         private async Task DoTime()
         {
-            UpdateInstruments1();
+            await UpdateInstruments();
             await UpdateCandles();
             await UpdateCurrentPrice();
             await UpdateHourlyPrices();
             await UpdateDailyPrices();
         }
 
-        private void UpdateInstruments1()
+        private async Task UpdateInstruments()
         {
+            var count = _instruments.Count;
+
             _instruments.Clear();
-            foreach (var asset in _assetsDictionaryClient.GetAllAssets().Select(e => e.Symbol).Distinct())
+
+            var assetList = _assetsDictionaryClient.GetAllAssets().Select(e => e.Symbol).Distinct().ToList();
+
+            if (!assetList.Any())
+            {
+                await Task.Delay(5000);
+                assetList = _assetsDictionaryClient.GetAllAssets().Select(e => e.Symbol).Distinct().ToList();
+            }
+
+
+            foreach (var asset in assetList)
             {
                 if (asset != Program.Settings.BasePriceAssetId)
                 {
                     var instrument = $"{asset}{Program.Settings.BasePriceAssetId}";
                     _instruments.Add(instrument, asset);
                 }
+            }
+
+            if (_instruments.Count != count)
+            {
+                await InitPrices();
             }
         }
 
@@ -243,7 +260,7 @@ namespace Service.PriceHistory.Jobs
             
             if (prices.Any())
             {
-                _prices = prices.Select(t => t.AssetPriceRecord).ToDictionary(key => key.AssetSymbol, value => value);
+                _prices = prices.Select(t => t.AssetPriceRecord).ToDictionary(key => $"{key.AssetSymbol}{Program.Settings.BasePriceAssetId}", value => value);
             }
 
             foreach (var instrument in _instruments)
@@ -284,6 +301,7 @@ namespace Service.PriceHistory.Jobs
         
         public async void Start()
         {
+            await UpdateInstruments();
             await InitPrices();
             _timer.Start();
         }
