@@ -2,10 +2,10 @@ using System;
 
 namespace Service.PriceHistory.Domain.Models
 {
-    public class InstrumentPriceRecord
+    public class AssetPriceRecord
     {
         public string BrokerId { get; set; }
-        public string InstrumentSymbol { get; set; }
+        public string AssetSymbol { get; set; }
         public decimal CurrentPrice { get; set; }
         public decimal H24P { get; set; }
         public BasePrice H24 { get; set; }

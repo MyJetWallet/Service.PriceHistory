@@ -25,7 +25,9 @@ namespace Service.PriceHistory.Settings
         
         [YamlProperty("PriceHistory.TimerPeriodInSec")]
         public int TimerPeriodInSec { get; set; }
-        
+
+        [YamlProperty("PriceHistory.BasePriceAssetId")]
+        public string BasePriceAssetId { get; set; }
 
     }
 }

@@ -6,7 +6,7 @@ using MyJetWallet.Sdk.NoSql;
 using Service.AssetsDictionary.Client;
 using Service.AssetsDictionary.Client.Grpc;
 using Service.AssetsDictionary.Grpc;
-using Service.PriceHistory.Domain.NoSql;
+using Service.PriceHistory.Domain.Models.NoSql;
 using Service.PriceHistory.Jobs;
 using SimpleTrading.CandlesHistory.Grpc;
 
@@ -17,8 +17,8 @@ namespace Service.PriceHistory.Modules
         protected override void Load(ContainerBuilder builder)
         {
 
-            builder.RegisterMyNoSqlWriter<InstrumentPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
-                InstrumentPriceRecordNoSqlEntity.TableName);
+            builder.RegisterMyNoSqlWriter<AssetPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
+                AssetPriceRecordNoSqlEntity.TableName);
             
             
             var factory = new MyGrpcClientFactory(Program.Settings.CandlesServiceGrpcUrl);
