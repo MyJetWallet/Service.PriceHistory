@@ -95,7 +95,7 @@ namespace Service.PriceHistory.Jobs
 
                 if (TryGetCandlePrice(candles.ToList(), out var price))
                 {
-                    _prices[instrument].CurrentPrice = Math.Round(price, 2, MidpointRounding.ToPositiveInfinity);
+                    _prices[instrument].CurrentPrice = price;
                     _prices[instrument].H24P = Calculate24HPercent(_prices[instrument]);
                 }
             }
@@ -113,7 +113,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument].H24 = new BasePrice
                         {
-                            Price = Math.Round(price, 2, MidpointRounding.ToPositiveInfinity),
+                            Price = price,
                             RecordTime = DateTime.UtcNow
                         };
 
@@ -137,7 +137,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument].D7 = new BasePrice
                         {
-                            Price = Math.Round(price, 2, MidpointRounding.ToPositiveInfinity),
+                            Price = price,
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -152,7 +152,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument].M1 = new BasePrice
                         {
-                            Price = Math.Round(price, 2, MidpointRounding.ToPositiveInfinity),
+                            Price = price,
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -167,7 +167,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         _prices[instrument].M3 = new BasePrice
                         {
-                            Price = Math.Round(price, 2, MidpointRounding.ToPositiveInfinity),
+                            Price = price,
                             RecordTime = DateTime.UtcNow
                         };
                         await _dataWriter.InsertOrReplaceAsync(
@@ -251,7 +251,7 @@ namespace Service.PriceHistory.Jobs
             if (priceRecord.CurrentPrice == 0 || priceRecord.H24.Price == 0)
                 return 0;
             var percentage = ((priceRecord.CurrentPrice - priceRecord.H24.Price) / priceRecord.H24.Price) * 100;
-            return Math.Round(percentage, 2, MidpointRounding.ToPositiveInfinity);
+            return Math.Round(percentage, 2);
         }
         
         private async Task InitPrices()
