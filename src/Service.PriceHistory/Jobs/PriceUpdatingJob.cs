@@ -55,12 +55,12 @@ namespace Service.PriceHistory.Jobs
 
             _instruments.Clear();
 
-            var assetList = _assetsDictionaryClient.GetAllAssets().Select(e => e.Symbol).Distinct().ToList();
+            var assetList = _assetsDictionaryClient.GetAllAssets().Where(e => e.IsEnabled).Select(e => e.Symbol).Distinct().ToList();
 
             if (!assetList.Any())
             {
                 await Task.Delay(5000);
-                assetList = _assetsDictionaryClient.GetAllAssets().Select(e => e.Symbol).Distinct().ToList();
+                assetList = _assetsDictionaryClient.GetAllAssets().Where(e => e.IsEnabled).Select(e => e.Symbol).Distinct().ToList();
             }
 
 
@@ -102,12 +102,10 @@ namespace Service.PriceHistory.Jobs
 
         private async Task UpdateHistoricPrices()
         {
-            
             foreach (var instrument in _instruments.Keys)
             {
                 if (_prices[instrument].H24.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
-                    _logger.LogInformation("Updating 24H prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow - TimeSpan.FromHours(24), out var price))
                     {
                         _prices[instrument].H24 = new BasePrice
@@ -118,14 +116,14 @@ namespace Service.PriceHistory.Jobs
 
                         _prices[instrument].H24P = Calculate24HPercent(_prices[instrument]);
 
-                        await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+                        await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+
+                        _logger.LogInformation("Updated 24H prices for {Instrument}. Price: {price}", instrument, price);
                     }
                 }
 
                 if (_prices[instrument].D7.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
-                    _logger.LogInformation("Updating D7 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddDays(-7), out var price))
                     {
                         _prices[instrument].D7 = new BasePrice
@@ -133,14 +131,14 @@ namespace Service.PriceHistory.Jobs
                             Price = price,
                             RecordTime = DateTime.UtcNow
                         };
-                        await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+                        await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+
+                        _logger.LogInformation("Updated D7 prices for {Instrument}. Price: {price}", instrument, price);
                     }
                 }
                 
                 if (_prices[instrument].M1.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
-                    _logger.LogInformation("Updating M1 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddMonths(-1), out var price))
                     {
                         _prices[instrument].M1 = new BasePrice
@@ -148,14 +146,14 @@ namespace Service.PriceHistory.Jobs
                             Price = price,
                             RecordTime = DateTime.UtcNow
                         };
-                        await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+                        await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+
+                        _logger.LogInformation("Updated M1 prices for {Instrument}. Price: {price}", instrument, price);
                     }
                 }
                 
                 if (_prices[instrument].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
-                    _logger.LogInformation("Updating M3 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddMonths(-3), out var price))
                     {
                         _prices[instrument].M3 = new BasePrice
@@ -163,8 +161,9 @@ namespace Service.PriceHistory.Jobs
                             Price = price,
                             RecordTime = DateTime.UtcNow
                         };
-                        await _dataWriter.InsertOrReplaceAsync(
-                            AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+                        await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
+
+                        _logger.LogInformation("Updated M3 prices for {Instrument}. Price: {price}", instrument, price);
                     }
                 }
             }
@@ -195,11 +194,13 @@ namespace Service.PriceHistory.Jobs
 
             foreach (var instrument in _instruments.Keys)
             {
+                
+
                 var candles = (await _candlesHistory.GetCandlesHistoryAsync(
                     new GetCandlesHistoryGrpcRequestContract()
                     {
                         Instrument = instrument,
-                        Bid = false,
+                        Bid = true,
                         CandleType = CandleTypeGrpcModel.Hour,
                         From = DateTime.UtcNow - TimeSpan.FromDays(2),
                         To = DateTime.UtcNow 
@@ -209,7 +210,7 @@ namespace Service.PriceHistory.Jobs
                     new GetCandlesHistoryGrpcRequestContract()
                     {
                         Instrument = instrument,
-                        Bid = false,
+                        Bid = true,
                         CandleType = CandleTypeGrpcModel.Day,
                         From = DateTime.UtcNow - TimeSpan.FromDays(100),
                         To = DateTime.UtcNow - TimeSpan.FromDays(2)
@@ -220,7 +221,9 @@ namespace Service.PriceHistory.Jobs
 
         private bool TryGetCandlePrice(string instrument, DateTime timePoint, out decimal price)
         {
-            var candles = _candles[instrument].Where(t=>t.Open != 0 && t.Close != 0);
+            var candles = _candles[instrument].Where(t=>t.Open != 0 && t.Close != 0).ToList();
+
+
             var candle = candles.LastOrDefault(t => t.DateTime >= timePoint);
             if (candle != null)
             {
@@ -258,7 +261,7 @@ namespace Service.PriceHistory.Jobs
 
             foreach (var instrument in _instruments)
             {
-                if (!_prices.TryGetValue(instrument.Key, out _))
+                if (!_prices.TryGetValue(instrument.Key, out var price))
                 {
                     var record = new AssetPriceRecord()
                     {
@@ -287,8 +290,14 @@ namespace Service.PriceHistory.Jobs
                         }
                     };
                     await _dataWriter.InsertAsync(AssetPriceRecordNoSqlEntity.Create(record));
+
                     _prices.Add(instrument.Key, record);
                 }
+
+                price.H24.RecordTime = DateTime.MinValue;
+                price.D7.RecordTime = DateTime.MinValue;
+                price.M1.RecordTime = DateTime.MinValue;
+                price.M3.RecordTime = DateTime.MinValue;
             }
         }
         
