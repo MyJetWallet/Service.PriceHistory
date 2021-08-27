@@ -46,8 +46,7 @@ namespace Service.PriceHistory.Jobs
             await UpdateInstruments();
             await UpdateCandles();
             await UpdateCurrentPrice();
-            await UpdateHourlyPrices();
-            await UpdateDailyPrices();
+            await UpdateHistoricPrices();
         }
 
         private async Task UpdateInstruments()
@@ -101,7 +100,7 @@ namespace Service.PriceHistory.Jobs
             }
         }
 
-        private async Task UpdateHourlyPrices()
+        private async Task UpdateHistoricPrices()
         {
             
             foreach (var instrument in _instruments.Keys)
@@ -118,19 +117,13 @@ namespace Service.PriceHistory.Jobs
                         };
 
                         _prices[instrument].H24P = Calculate24HPercent(_prices[instrument]);
-                        
+
                         await _dataWriter.InsertOrReplaceAsync(
                             AssetPriceRecordNoSqlEntity.Create(_prices[instrument]));
                     }
                 }
-            }
-        }
-        
-        private async Task UpdateDailyPrices()
-        {
-            foreach (var instrument in _instruments.Keys)
-            {
-                if (_prices[instrument].D7.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
+
+                if (_prices[instrument].D7.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
                     _logger.LogInformation("Updating D7 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddDays(-7), out var price))
@@ -145,7 +138,7 @@ namespace Service.PriceHistory.Jobs
                     }
                 }
                 
-                if (_prices[instrument].M1.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
+                if (_prices[instrument].M1.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
                     _logger.LogInformation("Updating M1 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddMonths(-1), out var price))
@@ -160,7 +153,7 @@ namespace Service.PriceHistory.Jobs
                     }
                 }
                 
-                if (_prices[instrument].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromDays(1))
+                if (_prices[instrument].M3.RecordTime < DateTime.UtcNow - TimeSpan.FromHours(1))
                 {
                     _logger.LogInformation("Updating M3 prices for {Instrument}", instrument);
                     if (TryGetCandlePrice(instrument, DateTime.UtcNow.AddMonths(-3), out var price))
