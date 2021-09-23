@@ -13,6 +13,7 @@ using Service.AssetsDictionary.Domain.Models;
 using Service.AssetsDictionary.Grpc;
 using Service.PriceHistory.Domain.Models;
 using Service.PriceHistory.Domain.Models.NoSql;
+using SimpleTrading.Abstraction.Candles;
 using SimpleTrading.CandlesHistory.Grpc;
 using SimpleTrading.CandlesHistory.Grpc.Contracts;
 using SimpleTrading.CandlesHistory.Grpc.Models;
@@ -88,7 +89,7 @@ namespace Service.PriceHistory.Jobs
                 {
                     Instrument = instrument,
                     Bid = false,
-                    CandleType = CandleTypeGrpcModel.Minute,
+                    CandleType = CandleType.Minute,
                     Amount = 10
                 });
 
@@ -201,7 +202,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         Instrument = instrument,
                         Bid = true,
-                        CandleType = CandleTypeGrpcModel.Hour,
+                        CandleType = CandleType.Hour,
                         From = DateTime.UtcNow - TimeSpan.FromDays(2),
                         To = DateTime.UtcNow 
                     })).OrderByDescending(e=>e.DateTime).ToList();
@@ -211,7 +212,7 @@ namespace Service.PriceHistory.Jobs
                     {
                         Instrument = instrument,
                         Bid = true,
-                        CandleType = CandleTypeGrpcModel.Day,
+                        CandleType = CandleType.Day,
                         From = DateTime.UtcNow - TimeSpan.FromDays(100),
                         To = DateTime.UtcNow - TimeSpan.FromDays(2)
                     })).OrderByDescending(e=>e.DateTime).ToList());
