@@ -1,11 +1,8 @@
 ﻿using Autofac;
-using Autofac.Core;
-using Autofac.Core.Registration;
 using MyJetWallet.Sdk.Grpc;
 using MyJetWallet.Sdk.NoSql;
 using Service.AssetsDictionary.Client;
-using Service.AssetsDictionary.Client.Grpc;
-using Service.AssetsDictionary.Grpc;
+using Service.BaseCurrencyConverter.Client;
 using Service.PriceHistory.Domain.Models.NoSql;
 using Service.PriceHistory.Jobs;
 using SimpleTrading.CandlesHistory.Grpc;
@@ -19,6 +16,9 @@ namespace Service.PriceHistory.Modules
 
             builder.RegisterMyNoSqlWriter<AssetPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
                 AssetPriceRecordNoSqlEntity.TableName);
+            
+            builder.RegisterMyNoSqlWriter<AssetPricesNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
+                AssetPricesNoSqlEntity.TableName);
             
             
             var factory = new MyGrpcClientFactory(Program.Settings.CandlesServiceGrpcUrl);
@@ -36,6 +36,13 @@ namespace Service.PriceHistory.Modules
                 .AutoActivate()
                 .SingleInstance();
             
+            builder.RegisterType<PriceUpdatingJobV2>()
+                .As<IStartable>()
+                .AsSelf()
+                .AutoActivate()
+                .SingleInstance();
+            
+            builder.RegisterBaseCurrencyConverterClient(Program.Settings.BaseCurrencyConverterGrpcServiceUrl, noSqlClient);
         }
     }
 }

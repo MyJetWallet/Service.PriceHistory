@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
@@ -9,8 +8,6 @@ using MyJetWallet.Domain;
 using MyJetWallet.Sdk.Service.Tools;
 using MyNoSqlServer.Abstractions;
 using Service.AssetsDictionary.Client;
-using Service.AssetsDictionary.Domain.Models;
-using Service.AssetsDictionary.Grpc;
 using Service.PriceHistory.Domain.Models;
 using Service.PriceHistory.Domain.Models.NoSql;
 using SimpleTrading.Abstraction.Candles;
@@ -27,18 +24,22 @@ namespace Service.PriceHistory.Jobs
         private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _dataWriter;
         private readonly IAssetsDictionaryClient _assetsDictionaryClient;
         private readonly MyTaskTimer _timer;
+        private readonly PriceUpdatingJobV2 _priceUpdatingJobV2;
         private Dictionary<string, AssetPriceRecord> _prices = new ();
         private Dictionary<string, string> _instruments = new ();
         private Dictionary<string, List<CandleGrpcModel>> _candles = new();
 
-        public PriceUpdatingJob(ISimpleTradingCandlesHistoryGrpc candlesHistory, ILogger<PriceUpdatingJob> logger, 
+        public PriceUpdatingJob(ISimpleTradingCandlesHistoryGrpc candlesHistory, 
+            ILogger<PriceUpdatingJob> logger, 
             IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> dataWriter, 
-            IAssetsDictionaryClient assetsDictionaryClient)
+            IAssetsDictionaryClient assetsDictionaryClient, 
+            PriceUpdatingJobV2 priceUpdatingJobV2)
         {
             _candlesHistory = candlesHistory;
             _logger = logger;
             _dataWriter = dataWriter;
             _assetsDictionaryClient = assetsDictionaryClient;
+            _priceUpdatingJobV2 = priceUpdatingJobV2;
             _timer = new MyTaskTimer(typeof(PriceUpdatingJob), TimeSpan.FromSeconds(Program.Settings.TimerPeriodInSec), _logger, DoTime);
         }
 
@@ -48,6 +49,9 @@ namespace Service.PriceHistory.Jobs
             await UpdateCandles();
             await UpdateCurrentPrice();
             await UpdateHistoricPrices();
+            
+            
+            await _priceUpdatingJobV2.RefreshAssetPrices();
         }
 
         private async Task UpdateInstruments()

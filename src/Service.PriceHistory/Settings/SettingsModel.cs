@@ -28,6 +28,8 @@ namespace Service.PriceHistory.Settings
 
         [YamlProperty("PriceHistory.BasePriceAssetId")]
         public string BasePriceAssetId { get; set; }
+        [YamlProperty("PriceHistory.BaseCurrencyConverterGrpcServiceUrl")]
+        public string BaseCurrencyConverterGrpcServiceUrl { get; set; }
 
     }
 }
