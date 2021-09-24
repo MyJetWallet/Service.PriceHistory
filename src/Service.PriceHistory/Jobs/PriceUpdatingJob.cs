@@ -23,6 +23,7 @@ namespace Service.PriceHistory.Jobs
         private readonly ILogger<PriceUpdatingJob> _logger;
         private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _dataWriter;
         private readonly IAssetsDictionaryClient _assetsDictionaryClient;
+        private readonly ISpotInstrumentDictionaryClient _spotInstrumentDictionaryClient;
         private readonly MyTaskTimer _timer;
         private readonly PriceUpdatingJobV2 _priceUpdatingJobV2;
         private Dictionary<string, AssetPriceRecord> _prices = new ();
@@ -33,13 +34,15 @@ namespace Service.PriceHistory.Jobs
             ILogger<PriceUpdatingJob> logger, 
             IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> dataWriter, 
             IAssetsDictionaryClient assetsDictionaryClient, 
-            PriceUpdatingJobV2 priceUpdatingJobV2)
+            PriceUpdatingJobV2 priceUpdatingJobV2,
+            ISpotInstrumentDictionaryClient spotInstrumentDictionaryClient)
         {
             _candlesHistory = candlesHistory;
             _logger = logger;
             _dataWriter = dataWriter;
             _assetsDictionaryClient = assetsDictionaryClient;
             _priceUpdatingJobV2 = priceUpdatingJobV2;
+            _spotInstrumentDictionaryClient = spotInstrumentDictionaryClient;
             _timer = new MyTaskTimer(typeof(PriceUpdatingJob), TimeSpan.FromSeconds(Program.Settings.TimerPeriodInSec), _logger, DoTime);
         }
 
@@ -60,22 +63,23 @@ namespace Service.PriceHistory.Jobs
 
             _instruments.Clear();
 
-            var assetList = _assetsDictionaryClient.GetAllAssets().Where(e => e.IsEnabled).Select(e => e.Symbol).Distinct().ToList();
+            var instruments = _spotInstrumentDictionaryClient.GetSpotInstrumentByBroker(new JetBrokerIdentity()
+            {
+                BrokerId = DomainConstants.DefaultBroker
+            });
 
-            if (!assetList.Any())
+            if (!instruments.Any())
             {
                 await Task.Delay(5000);
-                assetList = _assetsDictionaryClient.GetAllAssets().Where(e => e.IsEnabled).Select(e => e.Symbol).Distinct().ToList();
+                instruments = _spotInstrumentDictionaryClient.GetSpotInstrumentByBroker(new JetBrokerIdentity()
+                {
+                    BrokerId = DomainConstants.DefaultBroker
+                });
             }
 
-
-            foreach (var asset in assetList)
+            foreach (var spotInstrument in instruments)
             {
-                if (asset != Program.Settings.BasePriceAssetId)
-                {
-                    var instrument = $"{asset}{Program.Settings.BasePriceAssetId}";
-                    _instruments.Add(instrument, asset);
-                }
+                _instruments[spotInstrument.Symbol] = null;
             }
 
             if (_instruments.Count != count)
@@ -261,16 +265,17 @@ namespace Service.PriceHistory.Jobs
             
             if (prices.Any())
             {
-                _prices = prices.Select(t => t.AssetPriceRecord).ToDictionary(key => $"{key.AssetSymbol}{Program.Settings.BasePriceAssetId}", value => value);
+                _prices = prices.Select(t => t.AssetPriceRecord)
+                    .ToDictionary(key => key.AssetSymbol, value => value);
             }
 
             foreach (var instrument in _instruments)
             {
                 if (!_prices.TryGetValue(instrument.Key, out var price))
                 {
-                    var record = new AssetPriceRecord()
+                    price = new AssetPriceRecord()
                     {
-                        AssetSymbol = instrument.Value,
+                        AssetSymbol = instrument.Key,
                         BrokerId = DomainConstants.DefaultBroker,
                         H24P = 0,
                         H24 = new BasePrice()
@@ -294,9 +299,9 @@ namespace Service.PriceHistory.Jobs
                             RecordTime = DateTime.MinValue
                         }
                     };
-                    await _dataWriter.InsertAsync(AssetPriceRecordNoSqlEntity.Create(record));
+                    await _dataWriter.InsertAsync(AssetPriceRecordNoSqlEntity.Create(price));
 
-                    _prices.Add(instrument.Key, record);
+                    _prices.Add(instrument.Key, price);
                 }
 
                 price.H24.RecordTime = DateTime.MinValue;
