@@ -11,16 +11,19 @@ namespace Service.PriceHistory.Services
 {
     public class BasePriceService : IBasePriceSerivce
     {
-        private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _dataWriter;
+        private readonly IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> _assetPriceRecordDataWriter;
+        private readonly IMyNoSqlServerDataWriter<AssetPricesNoSqlEntity> _assetPricesDataWriter;
 
-        public BasePriceService(IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> dataWriter)
+        public BasePriceService(IMyNoSqlServerDataWriter<AssetPriceRecordNoSqlEntity> assetPriceRecordDataWriter,
+            IMyNoSqlServerDataWriter<AssetPricesNoSqlEntity> assetPricesDataWriter)
         {
-            _dataWriter = dataWriter;
+            _assetPriceRecordDataWriter = assetPriceRecordDataWriter;
+            _assetPricesDataWriter = assetPricesDataWriter;
         }
 
         public async Task<BasePriceListResponse> GetAllPrices(BasePriceRequest request)
         {
-            var entities = await _dataWriter.GetAsync(request.BrokerId);
+            var entities = await _assetPriceRecordDataWriter.GetAsync(request.BrokerId);
             return new BasePriceListResponse()
             {
                 BasePrices = entities.Select(rec => new BasePriceResponse()
@@ -39,7 +42,7 @@ namespace Service.PriceHistory.Services
 
         public async Task<BasePriceResponse> GetPricesByAsset(BasePriceRequest request)
         {
-            var entity = await _dataWriter.GetAsync(request.BrokerId, request.AssetId);
+            var entity = await _assetPriceRecordDataWriter.GetAsync(request.BrokerId, request.AssetId);
             return new BasePriceResponse()
             {
                 AssetId = entity.AssetPriceRecord.AssetSymbol,
@@ -81,9 +84,9 @@ namespace Service.PriceHistory.Services
                     RecordTime = DateTime.UtcNow
                 },
             };
-            await _dataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(record));
+            await _assetPriceRecordDataWriter.InsertOrReplaceAsync(AssetPriceRecordNoSqlEntity.Create(record));
             
-            var entity = await _dataWriter.GetAsync(request.BrokerId, request.AssetId);
+            var entity = await _assetPriceRecordDataWriter.GetAsync(request.BrokerId, request.AssetId);
             return new BasePriceResponse()
             {
                 AssetId = entity.AssetPriceRecord.AssetSymbol,
@@ -94,6 +97,15 @@ namespace Service.PriceHistory.Services
                 D7 = entity.AssetPriceRecord.D7.Price,
                 M1 = entity.AssetPriceRecord.M1.Price,
                 M3 = entity.AssetPriceRecord.M3.Price,
+            };
+        }
+
+        public async Task<GetAssetPricesV2Response> GetAssetPricesV2()
+        {
+            var assetPrices = await _assetPricesDataWriter.GetAsync();
+            return new GetAssetPricesV2Response()
+            {
+                AssetPrices = assetPrices.Select(e => e.AssetPrices).ToList()
             };
         }
     }

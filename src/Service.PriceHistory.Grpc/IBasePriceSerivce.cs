@@ -15,5 +15,8 @@ namespace Service.PriceHistory.Grpc
         
         [OperationContract]
         Task<BasePriceResponse> EditBasePriceRecord(BasePriceEditRequest request);
+        
+        [OperationContract]
+        Task<GetAssetPricesV2Response> GetAssetPricesV2();
     }
 }

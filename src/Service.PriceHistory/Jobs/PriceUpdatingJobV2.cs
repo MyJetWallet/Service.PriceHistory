@@ -51,7 +51,6 @@ namespace Service.PriceHistory.Jobs
             try
             {
                 await UpdateAssets();
-                
                 var pricesByOperationSymbols = (await _assetPriceRecordDataWriter.GetAsync()).ToList();
                 
                 foreach (var baseAsset in _assets)
@@ -68,7 +67,6 @@ namespace Service.PriceHistory.Jobs
                         BaseAsset = baseAsset,
                         BrokerId = DomainConstants.DefaultBroker
                     });
-
                     foreach (var quoteAsset in _assets)
                     {
                         var startValue = 1m;
@@ -117,7 +115,7 @@ namespace Service.PriceHistory.Jobs
             }
             catch (Exception ex)
             {
-                
+                _logger.LogError(ex, ex.Message);
             }
         }
         private async Task UpdateAssets()
