@@ -80,7 +80,7 @@ namespace Service.PriceHistory.Jobs
                             M1 = startValue,
                             M3 = startValue
                         };
-                        if (baseAsset == quoteAsset)
+                        if (baseAsset.Symbol == quoteAsset.Symbol)
                         {
                             var pricesByOperationSymbol = pricesByOperationSymbols.FirstOrDefault(e =>
                                 e.AssetPriceRecord.AssetSymbol == quoteAsset.Symbol)?.AssetPriceRecord;
