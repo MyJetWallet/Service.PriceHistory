@@ -82,14 +82,11 @@ namespace Service.PriceHistory.Jobs
                         };
                         if (baseAsset.Symbol == quoteAsset.Symbol)
                         {
-                            var pricesByOperationSymbol = pricesByOperationSymbols.FirstOrDefault(e =>
-                                e.AssetPriceRecord.AssetSymbol == quoteAsset.Symbol)?.AssetPriceRecord;
-                            
-                            priceByQuoteAsset.CurrentPrice = pricesByOperationSymbol.CurrentPrice;
-                            priceByQuoteAsset.H24 = pricesByOperationSymbol.H24.Price;
-                            priceByQuoteAsset.D7 = pricesByOperationSymbol.D7.Price;
-                            priceByQuoteAsset.M1*= pricesByOperationSymbol.M1.Price;
-                            priceByQuoteAsset.M3 *= pricesByOperationSymbol.M3.Price;
+                            priceByQuoteAsset.CurrentPrice = 1;
+                            priceByQuoteAsset.H24 = 1;
+                            priceByQuoteAsset.D7 = 1;
+                            priceByQuoteAsset.M1 = 1;
+                            priceByQuoteAsset.M3 = 1;
                         }
                         else
                         {
