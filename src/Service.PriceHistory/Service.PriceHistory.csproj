@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>2c1ef9da-d0f2-45d8-b40c-54de26ea0180</UserSecretsId>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
@@ -12,12 +12,12 @@
     <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
-    <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="1.0.5" />
-    <PackageReference Include="MyJetWallet.Sdk.GrpcMetrics" Version="2.0.3" />
+    <PackageReference Include="MyJetWallet.Sdk.Grpc" Version="2.0.0" />
+    <PackageReference Include="MyJetWallet.Sdk.GrpcMetrics" Version="2.0.4" />
     <PackageReference Include="MyJetWallet.Sdk.GrpcSchema" Version="1.0.6" />
-    <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.6.11" />
-    <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.8.0" />
-    <PackageReference Include="MyJetWallet.Service.BaseCurrencyConverter.Client" Version="1.0.2" />
+    <PackageReference Include="MyJetWallet.Sdk.Service" Version="2.0.2" />
+    <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.9.5" />
+    <PackageReference Include="MyJetWallet.Service.BaseCurrencyConverter.Client" Version="1.1.0" />
     <PackageReference Include="MyNoSqlServer.Abstractions" Version="1.0.5" />
     <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
