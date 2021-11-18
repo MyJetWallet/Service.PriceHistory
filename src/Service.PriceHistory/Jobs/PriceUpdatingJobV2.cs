@@ -70,58 +70,73 @@ namespace Service.PriceHistory.Jobs
                     });
                     foreach (var quoteAsset in _assets)
                     {
-                        var startValue = 1m;
-                        var priceByQuoteAsset = new AssetPrice()
+                        try
                         {
-                            Asset = quoteAsset.Symbol,
-                            CurrentPrice = startValue,
-                            H24 = startValue,
-                            D7 = startValue,
-                            M1 = startValue,
-                            M3 = startValue
-                        };
-                        if (baseAsset.Symbol == quoteAsset.Symbol)
-                        {
-                            priceByQuoteAsset.CurrentPrice = 1;
-                            priceByQuoteAsset.H24 = 1;
-                            priceByQuoteAsset.D7 = 1;
-                            priceByQuoteAsset.M1 = 1;
-                            priceByQuoteAsset.M3 = 1;
-                        }
-                        else
-                        {
-                            var map = convertMap.Maps.FirstOrDefault(e => e.AssetSymbol == quoteAsset.Symbol);
-                            if (map != null)
+                            var startValue = 1m;
+                            var priceByQuoteAsset = new AssetPrice()
                             {
-                                foreach (var operation in map.Operations)
+                                Asset = quoteAsset.Symbol,
+                                CurrentPrice = startValue,
+                                H24 = startValue,
+                                D7 = startValue,
+                                M1 = startValue,
+                                M3 = startValue
+                            };
+                            if (baseAsset.Symbol == quoteAsset.Symbol)
+                            {
+                                priceByQuoteAsset.CurrentPrice = 1;
+                                priceByQuoteAsset.H24 = 1;
+                                priceByQuoteAsset.D7 = 1;
+                                priceByQuoteAsset.M1 = 1;
+                                priceByQuoteAsset.M3 = 1;
+                            }
+                            else
+                            {
+                                var map = convertMap.Maps.FirstOrDefault(e => e.AssetSymbol == quoteAsset.Symbol);
+                                if (map != null)
                                 {
-                                    var pricesByOperationSymbol = pricesByOperationSymbols.FirstOrDefault(e =>
-                                        e.AssetPriceRecord.AssetSymbol == operation.InstrumentPrice)?.AssetPriceRecord;
-                                
-                                    if (pricesByOperationSymbol != null)
+                                    foreach (var operation in map.Operations)
                                     {
-                                        if (operation.IsMultiply)
+                                        var pricesByOperationSymbol = pricesByOperationSymbols.FirstOrDefault(e =>
+                                                e.AssetPriceRecord.AssetSymbol == operation.InstrumentPrice)
+                                            ?.AssetPriceRecord;
+
+                                        if (pricesByOperationSymbol != null)
                                         {
-                                            priceByQuoteAsset.CurrentPrice *= pricesByOperationSymbol.CurrentPrice;
-                                            priceByQuoteAsset.H24 *= pricesByOperationSymbol.H24.Price;
-                                            priceByQuoteAsset.D7 *= pricesByOperationSymbol.D7.Price;
-                                            priceByQuoteAsset.M1 *= pricesByOperationSymbol.M1.Price;
-                                            priceByQuoteAsset.M3 *= pricesByOperationSymbol.M3.Price;
-                                        }
-                                        else
-                                        {
-                                            priceByQuoteAsset.CurrentPrice /= pricesByOperationSymbol.CurrentPrice;
-                                            priceByQuoteAsset.H24 /= pricesByOperationSymbol.H24.Price;
-                                            priceByQuoteAsset.D7 /= pricesByOperationSymbol.D7.Price;
-                                            priceByQuoteAsset.M1 /= pricesByOperationSymbol.M1.Price;
-                                            priceByQuoteAsset.M3 /= pricesByOperationSymbol.M3.Price;
+                                            if (operation.IsMultiply)
+                                            {
+                                                priceByQuoteAsset.CurrentPrice *= pricesByOperationSymbol.CurrentPrice;
+                                                priceByQuoteAsset.H24 *= pricesByOperationSymbol.H24.Price;
+                                                priceByQuoteAsset.D7 *= pricesByOperationSymbol.D7.Price;
+                                                priceByQuoteAsset.M1 *= pricesByOperationSymbol.M1.Price;
+                                                priceByQuoteAsset.M3 *= pricesByOperationSymbol.M3.Price;
+                                            }
+                                            else
+                                            {
+                                                priceByQuoteAsset.CurrentPrice /= pricesByOperationSymbol.CurrentPrice;
+                                                priceByQuoteAsset.H24 /= pricesByOperationSymbol.H24.Price;
+                                                priceByQuoteAsset.D7 /= pricesByOperationSymbol.D7.Price;
+                                                priceByQuoteAsset.M1 /= pricesByOperationSymbol.M1.Price;
+                                                priceByQuoteAsset.M3 /= pricesByOperationSymbol.M3.Price;
+                                            }
                                         }
                                     }
                                 }
                             }
+
+                            RoundPrices(priceByQuoteAsset, baseAsset.Accuracy);
+                            assetPrices.PricesByQuoteAsset.Add(priceByQuoteAsset);
                         }
-                        RoundPrices(priceByQuoteAsset, baseAsset.Accuracy);
-                        assetPrices.PricesByQuoteAsset.Add(priceByQuoteAsset);
+                        catch (DivideByZeroException e)
+                        {
+                            _logger.LogWarning(
+                                $"Cannot calculate price from {baseAsset.Symbol} to {quoteAsset.Symbol} Dive to 0 (AssetPriceRecordNoSqlEntity has 0 price)");
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError(e,
+                                $"Cannot calculate price from {baseAsset.Symbol} to {quoteAsset.Symbol}");
+                        }
                     }
                     await _assetPricesDataWriter.InsertOrReplaceAsync(AssetPricesNoSqlEntity.Create(assetPrices));
                 }
