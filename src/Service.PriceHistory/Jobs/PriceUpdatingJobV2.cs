@@ -54,7 +54,7 @@ namespace Service.PriceHistory.Jobs
                 await UpdateAssets();
                 var pricesByOperationSymbols = (await _assetPriceRecordDataWriter.GetAsync()).ToList();
                 
-                foreach (var baseAsset in _assets)
+                foreach (var baseAsset in _assets.Where(e => e.CanBeBaseAsset))
                 {
                     var assetPrices = new AssetPrices()
                     {
@@ -140,6 +140,16 @@ namespace Service.PriceHistory.Jobs
                     }
                     await _assetPricesDataWriter.InsertOrReplaceAsync(AssetPricesNoSqlEntity.Create(assetPrices));
                 }
+
+                var listTask = new List<Task>();
+                foreach (var baseAsset in _assets.Where(e => !e.CanBeBaseAsset))
+                {
+                    listTask.Add(_assetPricesDataWriter.DeleteAsync(
+                        AssetPricesNoSqlEntity.GeneratePartitionKey(baseAsset.BrokerId),
+                        AssetPricesNoSqlEntity.GenerateRowKey(baseAsset.Symbol)).AsTask());
+                }
+
+                await Task.WhenAll(listTask);
             }
             catch (Exception ex)
             {
