@@ -18,6 +18,9 @@ namespace Service.PriceHistory.Jobs
 {
     public class PriceUpdatingJobV2 : IStartable, IDisposable
     {
+        // calculate all base prices to 10 accuracy to avoid problems with small prices and 2 numbers in fiat accuracy
+        public const int BasePriceAccuracy = 10;
+        
         private readonly ILogger<PriceUpdatingJobV2> _logger;
         private readonly MyTaskTimer _timer;
         private readonly IBaseCurrencyConverterService _baseCurrencyConverterService;
@@ -124,7 +127,7 @@ namespace Service.PriceHistory.Jobs
                                 }
                             }
 
-                            RoundPrices(priceByQuoteAsset, baseAsset.Accuracy);
+                            RoundPrices(priceByQuoteAsset, BasePriceAccuracy);
                             assetPrices.PricesByQuoteAsset.Add(priceByQuoteAsset);
                         }
                         catch (DivideByZeroException e)
