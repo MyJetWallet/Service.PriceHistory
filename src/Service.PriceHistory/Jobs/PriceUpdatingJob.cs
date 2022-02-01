@@ -90,7 +90,7 @@ namespace Service.PriceHistory.Jobs
 
         private async Task UpdateCurrentPrice()
         {
-            _logger.LogInformation("Updating current prices");
+            //_logger.LogDebug("Updating current prices");
             foreach (var instrument in _instruments.Keys)
             {
                 var candles = await _candlesHistory.GetLastCandlesAsync(new GetLastCandlesGrpcRequestContract()
