@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyNoSqlServer.Abstractions" Version="1.0.5" />
+    <PackageReference Include="MyNoSqlServer.Abstractions" Version="1.2.3" />
     <PackageReference Include="MyNoSqlServer.DataReader" Version="1.4.4" />
   </ItemGroup>
 
