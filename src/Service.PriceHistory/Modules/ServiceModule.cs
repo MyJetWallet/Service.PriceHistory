@@ -28,7 +28,7 @@ namespace Service.PriceHistory.Modules
                 .As<ISimpleTradingCandlesHistoryGrpc>()
                 .SingleInstance();
 
-            var noSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
+            var noSqlClient = builder.CreateNoSqlClient(Program.Settings.MyNoSqlReaderHostPort, Program.LogFactory);
             builder.RegisterAssetsDictionaryClients(noSqlClient);
                 
             builder.RegisterType<PriceUpdatingJob>()
