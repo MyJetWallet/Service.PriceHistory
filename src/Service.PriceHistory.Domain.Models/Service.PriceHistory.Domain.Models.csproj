@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="2.2.7" />
+    <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="2.2.8" />
   </ItemGroup>
 
 </Project>
