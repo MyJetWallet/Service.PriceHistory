@@ -14,10 +14,10 @@ namespace Service.PriceHistory.Modules
         protected override void Load(ContainerBuilder builder)
         {
 
-            builder.RegisterMyNoSqlWriter<AssetPriceRecordNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
+            builder.RegisterMyNoSqlWriter<AssetPriceRecordNoSqlEntity>(()=>Program.Settings.MyNoSqlWriterUrl,
                 AssetPriceRecordNoSqlEntity.TableName);
             
-            builder.RegisterMyNoSqlWriter<AssetPricesNoSqlEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl),
+            builder.RegisterMyNoSqlWriter<AssetPricesNoSqlEntity>(()=>Program.Settings.MyNoSqlWriterUrl,
                 AssetPricesNoSqlEntity.TableName);
             
             
